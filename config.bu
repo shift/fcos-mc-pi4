@@ -88,6 +88,7 @@ systemd:
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
+        ExecStartPre=-/usr/bin/mkdir -p /opt/minecraft
         ExecStartPre=/bin/rm -f %t/%n.ctr-id
         ExecStart=/usr/bin/podman run --cidfile=%t/%n.ctr-id --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name mc -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z itzg/minecraft-server
         ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
