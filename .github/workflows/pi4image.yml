@@ -56,7 +56,7 @@ jobs:
           pwd
           ls -lhart
           mv $(ls *.raw) Minecraft-FCOS-RaspberryPi4.img
-          xz -9 Step-CA-FCOS-RaspberryPi4.img
+          xz -9 Minecraft-FCOS-RaspberryPi4.img
           
       - name: release
         uses: actions/create-release@v1
