@@ -1,0 +1,134 @@
+variant: fcos
+version: 1.4.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGudjVmaFrNFWvUVZSGk2frMLAz1820uz0yNUp2NNKDj59SeqbwIliW3X4rpyeCKL6fvyO+xYRSNg1WaezZT3tc=
+
+storage:
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: |
+          mcs
+    - path: /etc/sysconfig/nftables.conf
+      append:
+            - inline: include "/etc/nftables/custom.nft"
+    - path: /etc/nftables/custom.nft
+      contents:
+            local: nft-rules
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [[updates.periodic.window]]
+          days = [ "Tues" ]
+          start_time = "06:30"
+          length_minutes = 60
+  links:
+    - path: /etc/alternatives/iptables
+      target: /usr/sbin/iptables-nft
+      overwrite: true
+      hard: false
+    - path: /etc/alternatives/iptables-restore
+      target: /usr/sbin/iptables-nft-restore
+      overwrite: true
+      hard: false
+    - path: /etc/alternatives/iptables-save
+      target: /usr/sbin/iptables-nft-save
+      overwrite: true
+      hard: false
+    - path: /etc/alternatives/ip6tables
+      target: /usr/sbin/ip6tables-nft
+      overwrite: true
+      hard: false
+    - path: /etc/alternatives/ip6tables-restore
+      target: /usr/sbin/ip6tables-nft-restore
+      overwrite: true
+      hard: false
+    - path: /etc/alternatives/ip6tables-save
+      target: /usr/sbin/ip6tables-nft-save
+      overwrite: true
+      hard: false
+
+systemd:
+  units:
+    - name: firstboot-wifi.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Configures WiFi if requested on first-boot.
+        After=NetworkManager.service
+        ConditionPathExists=/boot/wifi.txt
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/boot/wifi.txt
+        PreExecStart=-/usr/bin/rpm-ostree install bcm283x-firmware.aarch64 NetworkManager-wifi.aarch64
+        PreExecStart=-/usr/bin/rpm-ostree apply-live
+        PreExecStart=-/usr/bin/systemctl restart NetworkManager
+        PreExecStart=-/usr/bin/sleep 10
+        ExecStart=/usr/bin/nmcli dev wifi connect ${SSID} password ${PASSPHRASE}
+        ExecStopPort=/usr/bin/rm /boot/wifi.txt
+        [Install]
+        WantedBy=multi-user.target default.target
+
+    - name: minecraft.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=minecraft.service
+        Documentation=man:podman-generate-systemd(1)
+        Wants=network-online.target
+        After=network-online.target
+        RequiresMountsFor=%t/containers
+        [Service]
+        Environment=PODMAN_SYSTEMD_UNIT=%n
+        Restart=on-failure
+        TimeoutStopSec=70
+        ExecStartPre=/bin/rm -f %t/%n.ctr-id
+        ExecStart=/usr/bin/podman run --cidfile=%t/%n.ctr-id --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name mc -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z itzg/minecraft-server
+        ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
+        ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        Type=notify
+        NotifyAccess=all
+        [Install]
+        WantedBy=default.target
+
+    - name: podman-exporter.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=podman-exporter.service
+        Documentation=man:podman-generate-systemd(1)
+        Wants=network-online.target
+        After=network-online.target
+        RequiresMountsFor=%t/containers
+
+        [Service]
+        Environment=PODMAN_SYSTEMD_UNIT=%n
+        Restart=on-failure
+        TimeoutStopSec=70
+        ExecStartPre=/bin/rm -f %t/%n.ctr-id
+        ExecStart=/usr/bin/podman run \
+                --cidfile=%t/%n.ctr-id \
+                --cgroups=no-conmon \
+                --rm \
+                --sdnotify=conmon \
+                --replace \
+                --name podman-exporter \
+                -d \
+                -p 9882:9882 \
+                -e CONTAINER_HOST=unix:///run/podman/podman.sock \
+                -v /run/podman/podman.sock:/run/podman/podman.sock \
+                -u root \
+                --security-opt label=disable ghcr.io/shift/prometheus-podman-exporter:latest
+        ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
+        ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        Type=notify
+        NotifyAccess=all
+
+        [Install]
+        WantedBy=default.target
