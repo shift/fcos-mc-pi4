@@ -69,8 +69,7 @@ systemd:
         [Service]
         Type=oneshot
         EnvironmentFile=/boot/wifi.txt
-        PreExecStart=-/usr/bin/rpm-ostree install bcm283x-firmware.aarch64 NetworkManager-wifi.aarch64
-        PreExecStart=-/usr/bin/rpm-ostree apply-live
+        PreExecStart=-/usr/bin/rpm-ostree install --apply-live bcm283x-firmware.aarch64 NetworkManager-wifi.aarch64
         PreExecStart=-/usr/bin/systemctl restart NetworkManager
         PreExecStart=-/usr/bin/sleep 10
         ExecStart=/usr/bin/nmcli dev wifi connect ${SSID} password ${PASSPHRASE}
