@@ -13,6 +13,9 @@ storage:
       contents:
         inline: |
           mcs
+    - path: /etc/local_exporter/config.toml
+      contents:
+            local: local_exporter.conf
     - path: /etc/sysconfig/nftables.conf
       append:
             - inline: include "/etc/nftables/custom.nft"
@@ -85,6 +88,7 @@ systemd:
         After=network-online.target
         RequiresMountsFor=%t/containers
         [Service]
+        EnvironmentFile=/boot/configuration
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
@@ -175,3 +179,46 @@ systemd:
         [Install]
         WantedBy=default.target
 
+    - name: local-exporter.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=local_exporter.service
+        Documentation=man:podman-generate-systemd(1)
+        Wants=network-online.target
+        After=network-online.target
+        RequiresMountsFor=%t/containers
+
+        [Service]
+        Environment=PODMAN_SYSTEMD_UNIT=%n
+        Restart=on-failure
+        TimeoutStopSec=70
+        ExecStartPre=/bin/rm \
+                -f %t/%n.ctr-id
+        ExecStart=/usr/bin/podman run \
+                --cidfile=%t/%n.ctr-id \
+                --cgroups=no-conmon \
+                --rm \
+                --sdnotify=conmon \
+                -d \
+                --replace \
+                --name local-exporter \
+                -it \
+                --privileged \
+                -p9598:9598 \
+                -v /:/host \
+                -v /run/zincati/public/metrics.promsock:/metrics.socket:Z \
+                -v /home/core/local_exporter.toml:/etc/local_exporter/config.toml:Z \
+                -it ghcr.io/shift/local_exporter:v0.0.16
+        ExecStop=/usr/bin/podman stop \
+                --ignore -t 10 \
+                --cidfile=%t/%n.ctr-id
+        ExecStopPost=/usr/bin/podman rm \
+                -f \
+                --ignore -t 10 \
+                --cidfile=%t/%n.ctr-id
+        Type=notify
+        NotifyAccess=all
+
+        [Install]
+        WantedBy=default.target

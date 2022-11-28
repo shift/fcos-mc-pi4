@@ -7,7 +7,7 @@ table inet filter {
     iifname lo accept
     ip protocol icmp accept
     ip6 nexthdr icmpv6 accept
-    tcp dport {ssh} accept
+    tcp dport {ssh,9598,9100,8080} accept
     udp dport {19132,25565} accept
     reject with icmp type port-unreachable
   }
