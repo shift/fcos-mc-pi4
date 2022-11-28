@@ -59,6 +59,38 @@ storage:
 
 systemd:
   units:
+    - name: podman.socket
+      enabled: true
+    - name: podman.service
+      enabled: true
+    - name: container-update.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Podman auto update containers
+
+        [Service]
+        Type=oneshot
+
+        ExecStart=/usr/bin/podman auto-update
+        ExecStartPost=/usr/bin/podman container prune --force
+        ExecStartPost=/usr/bin/podman image prune --all --force
+        
+        [Install]
+        WantedBy=multi-user.target default.target
+    - name: container-update.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=daily update containers
+
+        [Timer]
+        OnCalendar=*-*-* 00:00:00
+        Persistent=true
+        RandomizedDelaySec=2h
+
+        [Install]
+        WantedBy=timers.target
     - name: firstboot-wifi.service
       enabled: true
       contents: |
@@ -92,10 +124,8 @@ systemd:
         Restart=on-failure
         TimeoutStopSec=70
         ExecStartPre=-/usr/bin/mkdir -p /opt/minecraft
-        ExecStartPre=/bin/rm -f %t/%n.ctr-id
-        ExecStart=/usr/bin/podman run --cidfile=%t/%n.ctr-id --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name mc -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z itzg/minecraft-server
-        ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        ExecStart=/usr/bin/podman run --label="io.containers.autoupdate=image" --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name %N -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z docker.io/itzg/minecraft-server
+        ExecStop=/usr/bin/podman stop --ignore %N
         Type=notify
         NotifyAccess=all
         [Install]
@@ -115,22 +145,18 @@ systemd:
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
-        ExecStartPre=/bin/rm -f %t/%n.ctr-id
         ExecStart=/usr/bin/podman run \
-                --cidfile=%t/%n.ctr-id \
                 --cgroups=no-conmon \
-                --rm \
                 --sdnotify=conmon \
                 --replace \
-                --name podman-exporter \
+                --name %N \
                 -d \
                 -p 9882:9882 \
                 -e CONTAINER_HOST=unix:///run/podman/podman.sock \
                 -v /run/podman/podman.sock:/run/podman/podman.sock \
                 -u root \
                 --security-opt label=disable ghcr.io/shift/prometheus-podman-exporter:latest
-        ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        ExecStop=/usr/bin/podman stop --ignore %N
         Type=notify
         NotifyAccess=all
 
@@ -152,17 +178,14 @@ systemd:
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
-        ExecStartPre=/bin/rm -f %t/%n.ctr-id
         ExecStart=/usr/bin/podman run \
             --cgroups=no-conmon \
-            --cidfile=%t/%n.ctr-id \
             --detach \
             --name node_exporter \
             --net host \
             --pid host \
             --publish 9100:9100 \
             --replace \
-            --rm \
             --sdnotify=conmon \
             --volume /:/host:ro,rslave \
             --volume /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
@@ -170,8 +193,7 @@ systemd:
             --collector.processes \
             --collector.systemd \
             --path.rootfs=/host
-        ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id
+        ExecStop=/usr/bin/podman stop --ignore %N
         Type=notify
         NotifyAccess=all
 
