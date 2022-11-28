@@ -40,6 +40,7 @@ jobs:
             -d /data \
             --strict < config.bu > config.ign
           sudo cp wifi.txt.example /img/p3/
+          sudo cp configuration /img/p3/
           sudo cp config.ign /img/p3/ignition/
           FCOSEFIPARTITION=${LOOPDEV}p2
           mkdir /tmp/FCOSEFIpart
