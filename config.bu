@@ -226,7 +226,7 @@ systemd:
                 -p9598:9598 \
                 -v /:/host \
                 -v /run/zincati/public/metrics.promsock:/metrics.socket:Z \
-                -v /home/core/local_exporter.toml:/etc/local_exporter/config.toml:Z \
+                -v /etc/local_exporter/config.toml:/etc/local_exporter/config.toml:Z \
                 -it ghcr.io/shift/local_exporter:v0.0.16
         ExecStop=/usr/bin/podman stop \
                 --ignore -t 10 \
