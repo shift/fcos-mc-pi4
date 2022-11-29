@@ -28,7 +28,7 @@ storage:
           [updates]
           strategy = "periodic"
           [[updates.periodic.window]]
-          days = [ "Tues" ]
+          days = [ "Tue" ]
           start_time = "06:30"
           length_minutes = 60
   links:
