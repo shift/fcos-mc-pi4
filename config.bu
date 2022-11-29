@@ -16,6 +16,10 @@ storage:
     - path: /etc/local_exporter/config.toml
       contents:
             local: local_exporter.conf
+    - path: /usr/local/bin/mc_plugins
+      mode: 0755
+      contents:
+            local: mc_plugins.sh
     - path: /etc/sysconfig/nftables.conf
       append:
             - inline: include "/etc/nftables/custom.nft"
@@ -123,7 +127,7 @@ systemd:
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
-        ExecStartPre=-/usr/bin/mkdir -p /opt/minecraft
+        ExecStartPre=-/usr/local/bin/mc_plugins
         ExecStart=/usr/bin/podman run --label="io.containers.autoupdate=image" --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name %N -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z docker.io/itzg/minecraft-server
         ExecStop=/usr/bin/podman stop --ignore %N
         Type=notify
