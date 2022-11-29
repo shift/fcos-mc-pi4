@@ -214,16 +214,13 @@ systemd:
         Environment=PODMAN_SYSTEMD_UNIT=%n
         Restart=on-failure
         TimeoutStopSec=70
-        ExecStartPre=/bin/rm \
-                -f %t/%n.ctr-id
         ExecStart=/usr/bin/podman run \
-                --cidfile=%t/%n.ctr-id \
                 --cgroups=no-conmon \
                 --rm \
                 --sdnotify=conmon \
                 -d \
                 --replace \
-                --name local-exporter \
+                --name %N \
                 -it \
                 --privileged \
                 -p9598:9598 \
@@ -233,11 +230,7 @@ systemd:
                 -it ghcr.io/shift/local_exporter:v0.0.16
         ExecStop=/usr/bin/podman stop \
                 --ignore -t 10 \
-                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                -f \
-                --ignore -t 10 \
-                --cidfile=%t/%n.ctr-id
+                %N
         Type=notify
         NotifyAccess=all
 
