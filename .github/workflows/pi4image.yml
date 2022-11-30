@@ -4,6 +4,9 @@ on:
     branches:
       - "main"
       - "ci"
+    tags:
+      - "*"
+
 permissions:
   contents: write
   packages: write
