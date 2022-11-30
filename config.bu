@@ -128,7 +128,7 @@ systemd:
         Restart=on-failure
         TimeoutStopSec=70
         ExecStartPre=-/usr/local/bin/mc_plugins
-        ExecStart=/usr/bin/podman run --label="io.containers.autoupdate=image" --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name %N -e EULA=TRUE -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z docker.io/itzg/minecraft-server
+        ExecStart=/usr/bin/podman run --label="io.containers.autoupdate=image" --cgroups=no-conmon --rm --sdnotify=conmon -d --replace -it --name %N -e EULA=TRUE  -e DIFFICULTY -e MODE -e MOTD -e SERVER_NAME -e ALLOW_NETHER -e ANNOUNCE_PLAYER_ACHIEVEMENTS -e ENABLE_COMMAND_BLOCK -e SPAWN_ANIMALS -e SPAWN_MONSTERS -e SPAWN_NPCS -e SPAWN_PROTECTION -e GENERATE_STRUCTURES -e VIEW_DISTANCE -e HARDCORE -e SNOOPER_ENABLED -e MAX_BUILD_HEIGHT -e FORCE_GAMEMODE -e MAX_TICK_TIME -e ENABLE_QUERY -e QUERY_PORT -e ENABLE_RCON -e RCON_PASSWORD -e RCON_PORT -e MAX_PLAYERS -e MAX_WORLD_SIZE -e LEVEL -e SEED -e PVP -e GENERATOR_SETTINGS -e ONLINE_MODE -e ALLOW_FLIGHT -e RESOURCE_PACK -e RESOURCE_PACK_SHA1 -e RESOURCE_PACK_ENFORCE -e PLAYER_IDLE_TIMEOUT -e BROADCAST_CONSOLE_TO_OPS -e BROADCAST_RCON_TO_OPS -e ENABLE_JMX -e SYNC_CHUNK_WRITES -e ENABLE_STATUS -e ENTITY_BROADCAST_RANGE_PERCENTAGE -e FUNCTION_PERMISSION_LEVEL -e NETWORK_COMPRESSION_THRESHOLD -e OP_PERMISSION_LEVEL -e PREVENT_PROXY_CONNECTIONS -e USE_NATIVE_TRANSPORT -e SIMULATION_DISTANCE -e PREVIEWS_CHAT -e ENFORCE_SECURE_PROFILE -e INITIAL_ENABLED_PACKS -e INITIAL_DISABLED_PACKS -e TYPE=PAPER -p 19132:19132/udp -p 25565:25565 -v /opt/minecraft:/data:Z docker.io/itzg/minecraft-server
         ExecStop=/usr/bin/podman stop --ignore %N
         Type=notify
         NotifyAccess=all
