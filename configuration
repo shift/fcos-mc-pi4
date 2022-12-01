@@ -1,3 +1,12 @@
+###############################################################################
+#########            Fedora CoreOS Minecraft Pi4 Edition             ##########
+#########                                                            ##########
+###############################################################################
+
+### IMPORTANT: 
+# You must update the SSH_KEY if you want to be able to SSH to the Pi.
+SSH_KEY="ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGudjVmaFrNFWvUVZSGk2frMLAz1820uz0yNUp2NNKDj59SeqbwIliW3X4rpyeCKL6fvyO+xYRSNg1WaezZT3tc="
+
 # Minecraft Server Settings
 # Please refer to https://github.com/itzg/docker-minecraft-server/
 #

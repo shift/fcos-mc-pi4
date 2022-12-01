@@ -67,6 +67,22 @@ systemd:
       enabled: true
     - name: podman.service
       enabled: true
+    - name: deploy-configuration-ssh-key.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Adds the configuration specified SSH_KEY into the core users authorized_keys.
+
+        [Service]
+        Type=oneshot
+
+        EnvironmentFile=/boot/configuration
+        ExecStart=/usr/bin/echo $SSH_KEY > /home/core/.ssh/authorized_keys.d/configuration
+        ExecStartPost=/usr/bin/chown core:core /home/core/.ssh/authorized_keys.d/configuration
+        ExecStartPost=/usr/bin/chmod 0600 /home/core/.ssh/authorized_keys.d/configuration
+        
+        [Install]
+        WantedBy=multi-user.target default.target
     - name: container-update.service
       enabled: true
       contents: |
