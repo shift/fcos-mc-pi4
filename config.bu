@@ -72,6 +72,7 @@ systemd:
       contents: |
         [Unit]
         Description=Adds the configuration specified SSH_KEY into the core users authorized_keys.
+        After=coreos-ignition-firstboot-complete.service
 
         [Service]
         Type=oneshot
@@ -228,7 +229,7 @@ systemd:
         Description=local_exporter.service
         Documentation=man:podman-generate-systemd(1)
         Wants=network-online.target
-        After=network-online.target
+        After=zincati.service
         RequiresMountsFor=%t/containers
 
         [Service]
