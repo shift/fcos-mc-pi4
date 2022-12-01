@@ -72,7 +72,7 @@ systemd:
       contents: |
         [Unit]
         Description=Adds the configuration specified SSH_KEY into the core users authorized_keys.
-        After=coreos-ignition-firstboot-complete.service
+        After=afterburn-sshkeys.target
 
         [Service]
         Type=oneshot
@@ -84,7 +84,7 @@ systemd:
         ExecStartPost=/usr/bin/chmod 0600 /home/core/.ssh/authorized_keys.d/configuration
         
         [Install]
-        WantedBy=multi-user.target default.target
+        WantedBy=multi-user.target
     - name: container-update.service
       enabled: true
       contents: |
