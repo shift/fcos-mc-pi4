@@ -78,7 +78,7 @@ systemd:
         Type=oneshot
 
         EnvironmentFile=/boot/configuration
-        PreExecStart=-/usr/bin/mkdir -p /home/core/.ssh/authorized_keys.d
+        ExecStartPre=-/usr/bin/mkdir -p /home/core/.ssh/authorized_keys.d
         ExecStart=/usr/bin/echo $SSH_KEY > /home/core/.ssh/authorized_keys.d/configuration
         ExecStartPost=/usr/bin/chown -R core:core /home/core/.ssh/authorized_keys.d
         ExecStartPost=/usr/bin/chmod 0600 /home/core/.ssh/authorized_keys.d/configuration
@@ -123,9 +123,9 @@ systemd:
         [Service]
         Type=oneshot
         EnvironmentFile=/boot/wifi.txt
-        PreExecStart=-/usr/bin/rpm-ostree install --apply-live bcm283x-firmware.aarch64 NetworkManager-wifi.aarch64
-        PreExecStart=-/usr/bin/systemctl restart NetworkManager
-        PreExecStart=-/usr/bin/sleep 10
+        ExecStartPre=-/usr/bin/rpm-ostree install --apply-live bcm283x-firmware.aarch64 NetworkManager-wifi.aarch64
+        ExecStartPre=-/usr/bin/systemctl restart NetworkManager
+        ExecStartPre=-/usr/bin/sleep 10
         ExecStart=/usr/bin/nmcli dev wifi connect ${SSID} password ${PASSPHRASE}
         ExecStopPort=/usr/bin/rm /boot/wifi.txt
         [Install]
