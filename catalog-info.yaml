@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: fcos-mc-pi4
+  annotations:
+    github.com/project-slug: shift/fcos-mc-pi4
+spec:
+  type: other
+  lifecycle: unknown
+  owner: infrastructure
